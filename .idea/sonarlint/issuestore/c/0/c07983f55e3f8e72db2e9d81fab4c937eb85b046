@@ -1,0 +1,37 @@
+
+Š
+java:S1192"GDefine a constant instead of duplicating this literal "codigo" 3 times.(«Íƒà8áú„³û1J$028195fc-ec4c-4558-8588-660565ea007d
+Ÿ
+java:S1989"\Handle the following exception that could be thrown by "parseDouble": NumberFormatException.(™²°ñ8÷ú„³û1J$b97f6248-bb9e-4c2e-9463-8bb61cfbcbf7
+¡
+java:S1989"YHandle the following exception that could be thrown by "parseInt": NumberFormatException.(ØŸíğÿÿÿÿÿ8÷ú„³û1J$0c748d29-5eca-4912-89da-50b3029fb323
+“
+java:S1989%"PHandle the following exception that could be thrown by "getWriter": IOException.(¾¸°è8øú„³û1J$63f2e0ba-8500-4479-a0f1-9fa578982fbe
+˜
+java:S1989'"PHandle the following exception that could be thrown by "sendError": IOException.(™³ôúÿÿÿÿ8øú„³û1J$b64522ff-7e4c-4916-bc49-03b2e3b3b6d1
+˜
+java:S19898"PHandle the following exception that could be thrown by "getWriter": IOException.(ÌÀç‡úÿÿÿÿ8ùú„³û1J$84248b61-329c-4de5-b354-61869762ebe0
+˜
+java:S1989:"PHandle the following exception that could be thrown by "sendError": IOException.(ò‰€øÿÿÿÿ8ùú„³û1J$f68ff109-8218-4a1e-ad45-0894c08671ab
+¨
+java:S1989?"eHandle the following exception that could be thrown by "writeValueAsString": JsonProcessingException.(öÉÎÈ8ùú„³û1J$8f8a8959-779e-410b-80cf-070ef8a0a50d
+’
+java:S1989B"PHandle the following exception that could be thrown by "getWriter": IOException.(ùœ–8ùú„³û1J$a4b244ef-87fa-45ad-85bf-48537a373a54
+˜
+java:S1989D"PHandle the following exception that could be thrown by "sendError": IOException.(â°€Ğøÿÿÿÿ8ùú„³û1J$35f530e7-1f16-4a0c-b01c-6ae95b26dc39
+˜
+java:S1989G"PHandle the following exception that could be thrown by "sendError": IOException.(ä¸¬”ùÿÿÿÿ8ùú„³û1J$fdc6b64b-8e8f-4474-8381-e7a865fd981a
+˜
+java:S1989V"PHandle the following exception that could be thrown by "getWriter": IOException.(€ÏÃËÿÿÿÿÿ8úú„³û1J$d9b6d284-f4b4-4af1-8690-9af7cd9bc73e
+˜
+java:S1989X"PHandle the following exception that could be thrown by "sendError": IOException.(å¤Ğüÿÿÿÿ8úú„³û1J$d6011ee6-4e81-417c-bbd5-cb829376850a
+“
+java:S1989b"PHandle the following exception that could be thrown by "getWriter": IOException.(ˆˆ€İ8ûú„³û1J$5d215b26-e047-4e60-9417-81d55c881d18
+˜
+java:S1989d"PHandle the following exception that could be thrown by "sendError": IOException.(³ÅÌšùÿÿÿÿ8ûú„³û1J$8a1e9e5b-ab22-49f8-b8f9-fee09eb55f7f
+›
+java:S2226"XRemove this misleading mutable servlet instance field or make it "static" and/or "final"(¹„Á¨8ûú„³û1J$e7e5eb1d-2e6d-45d9-977f-91f09b9b2949
+›
+java:S2226"XRemove this misleading mutable servlet instance field or make it "static" and/or "final"(³’é…8ûú„³û1J$d406648d-9656-4eea-9ef8-ee008a3dc332
+›
+java:S2226"XRemove this misleading mutable servlet instance field or make it "static" and/or "final"(ÁªÎ†8ûú„³û1J$48de6be7-7319-4b5b-8056-faf190491fdf
