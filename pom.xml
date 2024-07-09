@@ -50,6 +50,18 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.0</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                Permissions: file:/Users/joao/workspace/my-project/data rw-
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
 <!--                <plugin>-->
 <!--                    <artifactId>maven-install-plugin</artifactId>-->
 <!--                    <version>2.5.2</version>-->
@@ -80,7 +92,7 @@
                         </container>
                         <configuration>
                             <properties>
-                                <cargo.servlet.port>8080</cargo.servlet.port>
+                                <cargo.servlet.port>8181</cargo.servlet.port>
                             </properties>
                         </configuration>
                     </configuration>

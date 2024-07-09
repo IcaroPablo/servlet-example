@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface UserRepositoryView {
 
-    boolean login(String userName, String password, Boolean administrador);
+    UserDto login(String cpf, String password, Boolean administrador);
 
     UserDto saveDataAccessUser(User user);
 

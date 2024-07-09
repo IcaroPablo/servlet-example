@@ -1,25 +1,32 @@
 package com.example.common.interfaces.rest.controllers;
 
 import com.example.common.interfaces.rest.dtos.CartDto;
+import com.example.common.interfaces.rest.dtos.ProductDto;
 import com.example.common.interfaces.service.ShoppingService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
-@NoArgsConstructor
 @AllArgsConstructor
 public class ShoppingController extends HttpServlet {
 
     private ObjectMapper objectMapper = new ObjectMapper();
-    private static final Gson gson = new Gson();
     private ShoppingService shoppingService;
+    private static final Logger logger = Logger.getLogger(ShoppingController.class.getName());
+
+
+    public ShoppingController() {
+        this.shoppingService = new ShoppingService();
+    }
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -38,9 +45,9 @@ public class ShoppingController extends HttpServlet {
                 }
             } else if (pathInfo.equals("/get")) {
                 String cpf = req.getParameter("cpf");
-                List<CartDto> carrinho = shoppingService.getCart(cpf);
+                CartDto carrinho = shoppingService.getCart(cpf);
 
-                if (carrinho != null && !carrinho.isEmpty()) {
+                if (carrinho != null && !carrinho.getProducts().isEmpty()) {
                     String jsonResponse = objectMapper.writeValueAsString(carrinho);
                     resp.setStatus(HttpServletResponse.SC_OK);
                     resp.setContentType("application/json");
@@ -51,38 +58,61 @@ public class ShoppingController extends HttpServlet {
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Recurso não encontrado");
             }
+        } else {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("Invalid request");
         }
     }
 
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String cpf = req.getParameter("cpf");
-        String carrinhoJson = req.getParameter("carrinho");
+        String pathInfo = req.getPathInfo();
+        if (pathInfo != null && pathInfo.equals("/update")) {
+            cartUpdate(req, resp);
+            return;
+        }
 
-        List<CartDto> carrinho = gson.fromJson(carrinhoJson, List.class);
+        CartDto cartDto = objectMapper.readValue(req.getInputStream(), CartDto.class);
+        String cpf = cartDto.getCpf();
+        List<ProductDto> carrinho = cartDto.getProducts();
+
         shoppingService.saveCart(cpf, carrinho);
 
         resp.setStatus(HttpServletResponse.SC_CREATED);
         resp.getWriter().write("Carrinho salvo com sucesso!");
     }
 
-    @Override
-    public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String codigo = req.getParameter("codigo");
-        Integer quantidade = Integer.parseInt(req.getParameter("quantidade"));
-        String carrinhoJson = req.getParameter("carrinho");
+    private void cartUpdate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String cpf = req.getParameter("cpf");
+        StringBuilder requestBody = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                requestBody.append(line);
+            }
+        }
 
-        List<CartDto> carrinho = gson.fromJson(carrinhoJson, List.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(requestBody.toString());
+        String codigo = jsonNode.has("code") ? jsonNode.get("code").asText() : null;
+        Integer quantidade = jsonNode.has("quantity") ? jsonNode.get("quantity").asInt() : null;
 
-        boolean isUpdated = shoppingService.updateCartItem(carrinho, codigo, quantidade);
+        if (cpf == null || cpf.isEmpty() || codigo == null || codigo.isEmpty() || quantidade == null) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "É preciso enviar os dados corretos.");
+            return;
+        }
 
-        if (isUpdated) {
+        CartDto cartDto = shoppingService.updateCartItem(cpf, codigo, quantidade);
+
+        if (cartDto != null) {
             resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().write("Produto atualizado com sucesso.");
+            resp.getWriter().write("Carrinho atualizado com sucesso.");
         } else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Falha ao atualizar o produto.");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Carrinho não encontrado.");
         }
     }
+
 
     @Override
     public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {

@@ -3,11 +3,13 @@ package com.example.common.constants;
 import static com.example.common.config.AppConfig.properties;
 
 public class Constants {
-    public static final String BD_USERS = properties.getProperty("bd_users_access");
-    public static final String BD_USERS_INFORMATION = properties.getProperty("bd_users_information");
-    public static final String BD_USERS_CABECALHO = "cpf,password,isAdministrador";
-    public static final String BD_PRODUCT = properties.getProperty("bd_product");
-    public static final String BD_CART = properties.getProperty("carrinho_compras");
+//    public static final String BD_USERS = properties.getProperty("bd_users_access");
+    public static final String BD_USERS = "/Users/joao/Documents/repos-jv/bd-lojinha/bd_users_access.csv";
+    public static final String BD_USERS_INFORMATION = "/Users/joao/Documents/repos-jv/bd-lojinha/bd_users_information.csv";
+    public static final String BD_USERS_INFORMATION_CABECALHO = "CPF, USERNAME, PHONE, IS_ADMINISTRADOR";
+    public static final String BD_USERS_CABECALHO = "CPF,PASSWORD,IS_ADMINISTRADOR";
+    public static final String BD_PRODUCT = "/Users/joao/Documents/repos-jv/bd-lojinha/bd_product.csv";
+    public static final String BD_CART = "/Users/joao/Documents/repos-jv/bd-lojinha/carrinho_compras.csv";
     public static final String BD_PRODUCT_CABECALHO = "CODE, DESCRIPTION, PRICE, QUANTITY";
     public static final String BD_CART_CABECALHO = "CPF, STATUS, ITENS";
     public static final String ERROR_READ_FILE = "Houve um erro ao tentar ler os dados do arquivo";

@@ -8,27 +8,31 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-@NoArgsConstructor
+import static com.example.common.infrastructure.utils.Present.printf;
+
 @AllArgsConstructor
 public class ProductController extends HttpServlet {
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final Gson gson = new Gson();
     private ProductService productService;
-    ProductDto productDto = new ProductDto();
+
+    public ProductController() {
+        this.productService = new ProductService();
+    }
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        productDto.setCode(req.getParameter("codigo"));
-        productDto.setDescription(req.getParameter("descricao"));
-        productDto.setPrice(Double.parseDouble(req.getParameter("valor")));
-        productDto.setQuantity(Integer.parseInt(req.getParameter("quantidade")));
+        String pathInfo = req.getPathInfo();
+        if (pathInfo != null && pathInfo.equals("/update")) {
+            productUpdate(req, resp);
+            return;
+        }
+
+        ProductDto productDto = objectMapper.readValue(req.getInputStream(), ProductDto.class);
 
         boolean isCreated = productService.createProduct(productDto);
 
@@ -40,14 +44,33 @@ public class ProductController extends HttpServlet {
         }
     }
 
+    private void productUpdate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        ProductDto productDto = objectMapper.readValue(req.getInputStream(), ProductDto.class);
+
+        if (productDto.getCode() == null || productDto.getCode().isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "É preciso enviar os dados corretos.");
+            return;
+        }
+
+        boolean isUpdated = productService.updateProduct(productDto);
+
+        if (isUpdated) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().write("Produto atualizado com sucesso.");
+        } else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Falha ao atualizar o produto.");
+        }
+    }
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo != null) {
-            if (pathInfo.equals("/product")) {
-                String codigo = req.getParameter("codigo");
-                productDto = productService.getProduct(codigo);
+            if (pathInfo.equals("/get-product")) {
+                printf("Endpoint /get-product. Code = %s", req.getParameter("code"));
+                String code = req.getParameter("code");
+                ProductDto productDto = productService.getProduct(code);
 
                 if (productDto != null) {
                     String jsonProduct = gson.toJson(productDto);
@@ -70,28 +93,14 @@ public class ProductController extends HttpServlet {
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Recurso não encontrado");
             }
-        }
-    }
-
-    @Override
-    public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Map<String, String[]> parameterMap = req.getParameterMap();
-        Map<String, String> updates = parameterMap.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
-
-        boolean isUpdated = productService.updateProduct(updates);
-
-        if (isUpdated) {
-            resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().write("Produto atualizado com sucesso.");
         } else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Falha ao atualizar o produto.");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Requisição inválida");
         }
     }
 
     @Override
     public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String codigo = req.getParameter("codigo");
+        String codigo = req.getParameter("code");
 
         if (productService.deleteProduct(codigo)) {
             resp.setStatus(HttpServletResponse.SC_OK);

@@ -2,21 +2,24 @@ package com.example.common.interfaces.service;
 
 import com.example.common.infrastructure.utils.FileUtils;
 import com.example.common.interfaces.repositories.ProductRepositoryView;
+import com.example.common.interfaces.repositories.repository.ProductRepository;
 import com.example.common.interfaces.rest.dtos.ProductDto;
 import com.example.domain.entities.Product;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 import static com.example.common.constants.Constants.BD_PRODUCT;
 import static com.example.common.constants.Constants.BD_PRODUCT_CABECALHO;
 
+@AllArgsConstructor
 public class ProductService {
     private ProductRepositoryView repository;
     Product product = new Product();
 
-    private ProductService(FileUtils fileUtils) {
-        fileUtils.createIfNotExists(BD_PRODUCT, BD_PRODUCT_CABECALHO);
+    public ProductService() {
+        this.repository = new ProductRepository();
+        FileUtils.createIfNotExists(BD_PRODUCT, BD_PRODUCT_CABECALHO);
     }
 
     public boolean createProduct(ProductDto productDto) {
@@ -40,20 +43,7 @@ public class ProductService {
         return repository.deleteProduct(code);
     }
 
-    public boolean updateProduct(Map<String, String> params) {
-        if (params.containsKey("description")) {
-            product.setDescription(params.get("description"));
-        }
-        if (params.containsKey("price")) {
-            product.setPrice(Double.parseDouble(params.get("price")));
-        }
-        if (params.containsKey("quantity")) {
-            product.setQuantity(Integer.parseInt(params.get("quantity")));
-        }
-        if (params.containsKey("code")) {
-            product.setCode(params.get("code"));
-        }
-
-        return repository.updateProduct(product);
+    public boolean updateProduct(ProductDto productDto) {
+        return repository.updateProduct(productDto);
     }
 }

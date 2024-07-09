@@ -2,7 +2,7 @@ package com.example.common.interfaces.repositories.repository;
 
 import com.example.common.interfaces.repositories.ShoppingRepositoryView;
 import com.example.common.interfaces.rest.dtos.CartDto;
-import com.example.domain.entities.Cart;
+import com.example.common.interfaces.rest.dtos.ProductDto;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,46 +10,82 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static com.example.common.constants.Constants.BD_CART;
 import static com.example.common.constants.Constants.ERROR_TEMP_FILE;
 import static com.example.common.infrastructure.utils.Present.print;
-import static com.example.common.infrastructure.utils.Present.printf;
-import static com.example.common.interfaces.rest.dtos.CartDto.fromCart;
 
 public class ShoppingRepository implements ShoppingRepositoryView {
 
-    Cart cart = new Cart();
+    private static final Logger logger = Logger.getLogger(ShoppingRepository.class.getName());
 
     @Override
     public boolean hasSavedCart(String cpf) {
-        return !getCart(cpf).isEmpty();
+        var cartDto = getCart(cpf);
+
+        return cartDto.getProducts() != null && !cartDto.getProducts().isEmpty();
     }
 
     @Override
-    public boolean saveCart(String cpf, List<CartDto> cart) {
+    public boolean saveCart(String cpf, List<ProductDto> cart) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(BD_CART, true))) {
-            StringBuilder linha = new StringBuilder(cpf + ",aberto");
-            for (CartDto item : cart) {
-                linha.append(",").append(item.getCodigo()).append(":")
-                        .append(item.getDescricao()).append(":")
-                        .append(item.getValor()).append(":")
-                        .append(item.getQuantidade());
+            StringBuilder linha = new StringBuilder(cpf + ",aberto,");
+            for (ProductDto item : cart) {
+                linha.append(item.getCode()).append(":")
+                        .append(item.getDescription()).append(":")
+                        .append(item.getPrice()).append(":")
+                        .append(item.getQuantity()).append(";");
             }
             writer.write(linha.toString());
             writer.newLine();
+            logger.log(Level.INFO, "Carrinho salvo. CPF {}", cpf);
             return true;
         } catch (IOException e) {
-            printf("Exception: %s", e.getMessage());
+            logger.log(Level.WARNING,"Exception: {}", e.getMessage());
             return false;
         }
     }
+
+    private boolean updateCart(String cpf, List<ProductDto> cart) {
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(BD_CART), StandardCharsets.UTF_8);
+
+            // Filtra todas as linhas exceto aquela que contém o cpf
+            List<String> updatedLines = lines.stream()
+                    .filter(line -> !line.startsWith(cpf))
+                    .collect(Collectors.toList());
+
+            // Constrói a nova linha com os produtos atualizados
+            StringBuilder newLine = new StringBuilder(cpf + ",aberto,");
+            for (ProductDto item : cart) {
+                newLine.append(item.getCode()).append(":")
+                        .append(item.getDescription()).append(":")
+                        .append(item.getPrice()).append(":")
+                        .append(item.getQuantity()).append(";");
+            }
+
+            // Adiciona a nova linha ao final da lista
+            updatedLines.add(newLine.toString());
+
+            // Escreve todas as linhas atualizadas de volta no arquivo
+            Files.write(Paths.get(BD_CART), updatedLines, StandardCharsets.UTF_8);
+
+            logger.log(Level.INFO, "Carrinho salvo e atualizado para o CPF: {}", cpf);
+            return true;
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Falha ao salvar o carrinho para o CPF {}. Exception: {}", new Object[]{ cpf, e.getMessage()});
+            return false;
+        }
+    }
+
 
     @Override
     public boolean deleteCart(String cpf) {
@@ -64,9 +100,10 @@ public class ShoppingRepository implements ShoppingRepositoryView {
                 }
                 writer.write(linha);
                 writer.newLine();
+                logger.log(Level.INFO,"Carrinho excluído. CPF {0}", new Object[]{cpf});
             }
         } catch (IOException e) {
-            printf("Exception: %s", e.getMessage());
+            logger.log(Level.WARNING, "Exception: {0}", new Object[]{e.getMessage()});
         }
 
         File fileCarrinho = new File(BD_CART);
@@ -76,46 +113,74 @@ public class ShoppingRepository implements ShoppingRepositoryView {
             return false;
         }
 
-        print("Carrinho limpo com sucesso. \n");
+        logger.log(Level.INFO, "Carrinho limpo com sucesso e arquivo recriado.");
         return true;
     }
 
     @Override
-    public boolean updateCartItem(List<CartDto> cart, String code, Integer quantity) {
-        if(cart.isEmpty()) {
-            print("O carrinho está vazio");
-            return false;
+    public CartDto updateCartItem(String cpf, String code, Integer quantity) {
+        CartDto cartDto = getCart(cpf);
+
+        print("recuperou o carrinho");
+
+        if (cartDto == null || cartDto.getProducts().isEmpty()) {
+            logger.log(Level.WARNING, "Carrinho não encontrado para o CPF: {}", cpf);
+            return null;
         }
-        for (int i = 0; i < cart.size(); i++) {
-            CartDto item = cart.get(i);
-            if (item.getCodigo().equals(code)) {
-                if (quantity == 0) {
-                    cart.remove(i);
-                    i--;
-                } else {
-                    item.setQuantidade(quantity);
-                }
+
+        List<ProductDto> cartItems = cartDto.getProducts();
+
+        boolean found = false;
+        for (ProductDto item : cartItems) {
+            if (item.getCode().equals(code)) {
+                item.setQuantity(quantity);
+                found = true;
+                break;
             }
         }
-        return true;
+
+        if (!found) {
+            logger.log(Level.WARNING, "Produto com código {} não encontrado no carrinho do CPF: {}", new Object[]{ code, cpf});
+            return null;
+        }
+
+        if (updateCart(cpf, cartItems)) {
+            logger.log(Level.INFO, "Carrinho atualizado e salvo com sucesso para o CPF: {}", cpf);
+            return cartDto;
+        } else {
+            logger.log(Level.WARNING, "Falha ao salvar o carrinho atualizado para o CPF: {}", cpf);
+            return null;
+        }
     }
 
+
     @Override
-    public List<CartDto> getCart(String cpf) {
-        List<CartDto> carrinhoItens = new ArrayList<>();
+    public CartDto getCart(String cpf) {
+        CartDto cartDto = new CartDto();
+        cartDto.setCpf(cpf);
+        List<ProductDto> carrinhoItens = new ArrayList<>();
+        cartDto.setProducts(carrinhoItens);
+
         try (BufferedReader reader = new BufferedReader(new FileReader(BD_CART))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
+                String[] parts = line.split(",", 3);
                 if (parts.length >= 3 && parts[0].equals(cpf) && parts[1].equals("aberto")) {
-                    String[] itemParts = parts[2].split(",");
+                    String[] itemParts = parts[2].split(";");
                     for (String itemPart : itemParts) {
                         String[] itemValues = itemPart.split(":");
-                        cart.setCodigo(itemValues[0]);
-                        cart.setDescricao(itemValues[1]);
-                        cart.setValor(Double.parseDouble(itemValues[2]));
-                        cart.setQuantidade(Integer.parseInt(itemValues[3]));
-                        carrinhoItens.add(fromCart(cart));
+                        if (itemValues.length == 4) {
+                            ProductDto productDto = new ProductDto();
+                            productDto.setCode(itemValues[0]);
+                            productDto.setDescription(itemValues[1]);
+                            productDto.setPrice(Double.parseDouble(itemValues[2]));
+                            productDto.setQuantity(Integer.parseInt(itemValues[3]));
+                            carrinhoItens.add(productDto);
+                            logger.log(Level.INFO, "Produto adicionado: Código: {0} | Descrição: {1} | Valor: R$ {2} | Qtd: {3}",
+                                    new Object[]{itemValues[0], itemValues[1], itemValues[2], itemValues[3]});
+                        } else {
+                            logger.log(Level.WARNING, "Formato de item inválido: {0}", new Object[]{itemPart});
+                        }
                     }
                     break;
                 }
@@ -123,11 +188,8 @@ public class ShoppingRepository implements ShoppingRepositoryView {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return carrinhoItens;
-    }
-
-    @Override
-    public boolean getAllCarts() {
-        return false;
+        logger.log(Level.INFO, "Recuperando carrinho aberto para o CPF: {0}", new Object[]{cpf});
+        logger.log(Level.INFO, "Total de itens no carrinho: {0}", new Object[]{carrinhoItens.size()});
+        return cartDto;
     }
 }

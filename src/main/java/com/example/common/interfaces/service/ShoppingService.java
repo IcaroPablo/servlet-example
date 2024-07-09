@@ -2,26 +2,37 @@ package com.example.common.interfaces.service;
 
 import com.example.common.infrastructure.utils.FileUtils;
 import com.example.common.interfaces.repositories.ShoppingRepositoryView;
+import com.example.common.interfaces.repositories.repository.ShoppingRepository;
+import com.example.common.interfaces.repositories.repository.UserRepository;
 import com.example.common.interfaces.rest.dtos.CartDto;
+import com.example.common.interfaces.rest.dtos.ProductDto;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.example.common.constants.Constants.BD_CART;
 import static com.example.common.constants.Constants.BD_CART_CABECALHO;
+import static com.example.common.infrastructure.utils.Present.println;
 
+@AllArgsConstructor
 public class ShoppingService {
 
     private ShoppingRepositoryView repository;
+    private FileUtils fileUtils;
 
-    private ShoppingService(FileUtils fileUtils) {
-        fileUtils.createIfNotExists(BD_CART, BD_CART_CABECALHO);
+    public ShoppingService() {
+        this.repository = new ShoppingRepository();
+        FileUtils.createIfNotExists(BD_CART, BD_CART_CABECALHO);
+        println("Construtor shopping service");
     }
 
-    public boolean hasSavedCart(String cpf) {
+    public boolean hasSavedCart(String cpf) throws IOException {
         return repository.hasSavedCart(cpf);
     }
 
-    public boolean saveCart(String cpf, List<CartDto> cart) {
+    public boolean saveCart(String cpf, List<ProductDto> cart) throws IOException {
         return repository.saveCart(cpf, cart);
     }
 
@@ -29,15 +40,11 @@ public class ShoppingService {
         return repository.deleteCart(cpf);
     }
 
-    public boolean updateCartItem(List<CartDto> cart, String codigo, Integer quantidade) {
-        return repository.updateCartItem(cart, codigo, quantidade);
+    public CartDto updateCartItem(String cpf, String codigo, Integer quantidade) {
+        return repository.updateCartItem(cpf, codigo, quantidade);
     }
 
-    public List<CartDto> getCart(String cpf) {
+    public CartDto getCart(String cpf) {
         return repository.getCart(cpf);
-    }
-
-    public boolean getAllCarts() {
-        return true;
     }
 }

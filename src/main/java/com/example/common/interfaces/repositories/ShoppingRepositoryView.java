@@ -1,6 +1,7 @@
 package com.example.common.interfaces.repositories;
 
 import com.example.common.interfaces.rest.dtos.CartDto;
+import com.example.common.interfaces.rest.dtos.ProductDto;
 
 import java.util.List;
 
@@ -8,13 +9,11 @@ public interface ShoppingRepositoryView {
 
     boolean hasSavedCart(String cpf);
 
-    boolean saveCart(String cpf, List<CartDto> cart);
+    boolean saveCart(String cpf, List<ProductDto> cart);
 
     boolean deleteCart(String cpf);
 
-    boolean updateCartItem(List<CartDto> cart, String codigo, Integer quantidade);
+    CartDto updateCartItem(String cpf, String codigo, Integer quantidade);
 
-    List<CartDto> getCart(String cpf);
-
-    boolean getAllCarts();
+    CartDto getCart(String cpf);
 }

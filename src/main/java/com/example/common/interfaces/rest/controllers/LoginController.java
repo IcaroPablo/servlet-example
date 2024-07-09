@@ -1,33 +1,45 @@
 package com.example.common.interfaces.rest.controllers;
 
+import com.example.common.interfaces.repositories.UserRepositoryView;
+import com.example.common.interfaces.repositories.repository.UserRepository;
 import com.example.common.interfaces.rest.dtos.LoginDto;
+import com.example.common.interfaces.rest.dtos.UserDto;
 import com.example.common.interfaces.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
 @AllArgsConstructor
-@NoArgsConstructor
 public class LoginController extends HttpServlet {
 
-	private UserService userService;
+	private final UserService userService;
+	ObjectMapper objectMapper = new ObjectMapper();
+	private final UserRepositoryView userRepositoryView;
 
-    @Override
-	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String cpf = req.getParameter("cpf");
-		String password = req.getParameter("password");
-		Boolean isAdministrador = Boolean.parseBoolean(req.getParameter("isAdministrador"));
 
-		LoginDto loginDto = new LoginDto(cpf, password, isAdministrador);
-		boolean loginSuccessful = userService.login(loginDto);
-
-		if (loginSuccessful)
-			resp.setStatus(HttpServletResponse.SC_OK);
-		else
-			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	public LoginController() {
+		this.userRepositoryView = new UserRepository();
+		this.userService = new UserService(userRepositoryView);
 	}
+
+	@Override
+	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		LoginDto loginDto = objectMapper.readValue(req.getInputStream(), LoginDto.class);
+
+		UserDto user = userService.login(loginDto);
+
+		if (user != null) {
+			resp.setStatus(HttpServletResponse.SC_OK);
+			String jsonResponse = objectMapper.writeValueAsString(user);
+			resp.setContentType("application/json");
+			resp.getWriter().write(jsonResponse);
+		} else {
+			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		}
+	}
+
 }

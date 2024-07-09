@@ -43,16 +43,17 @@ public class ProductRepository implements ProductRepositoryView {
 
     @Override
     public ProductDto getProduct(String code) {
-        ProductDto produtoDto = null;
+        var produtoDto = new ProductDto();
         try (BufferedReader reader = new BufferedReader(new FileReader(BD_PRODUCT))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] dados = line.split(",");
                 if (dados[0].equals(code)) {
-                    product.setDescription(dados[1]);
-                    product.setPrice(Double.parseDouble(dados[2]));
-                    product.setQuantity(Integer.parseInt(dados[3]));
-                    return fromProduct(product);
+                    produtoDto.setCode(code);
+                    produtoDto.setDescription(dados[1]);
+                    produtoDto.setPrice(Double.parseDouble(dados[2]));
+                    produtoDto.setQuantity(Integer.parseInt(dados[3]));
+                    return produtoDto;
                 }
             }
         } catch (IOException e) {
@@ -84,7 +85,7 @@ public class ProductRepository implements ProductRepositoryView {
     }
 
     @Override
-    public boolean updateProduct(Product product) {
+    public boolean updateProduct(ProductDto product) {
         try (BufferedReader reader = new BufferedReader(new FileReader(BD_PRODUCT));
              BufferedWriter writer = new BufferedWriter(new FileWriter("temp.txt"))) {
 

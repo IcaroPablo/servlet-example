@@ -9,7 +9,7 @@ public interface ProductRepositoryView {
 
     boolean createProduct(Product product);
 
-    boolean updateProduct(Product product);
+    boolean updateProduct(ProductDto product);
 
     boolean deleteProduct(String code);
 

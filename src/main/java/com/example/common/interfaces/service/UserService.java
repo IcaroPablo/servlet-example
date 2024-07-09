@@ -1,6 +1,5 @@
 package com.example.common.interfaces.service;
 
-import com.example.common.infrastructure.utils.FileUtils;
 import com.example.common.interfaces.repositories.UserRepositoryView;
 import com.example.common.interfaces.rest.dtos.LoginDto;
 import com.example.common.interfaces.rest.dtos.UserDto;
@@ -8,20 +7,15 @@ import com.example.domain.entities.User;
 
 import java.util.List;
 
-import static com.example.common.constants.Constants.BD_USERS;
-import static com.example.common.constants.Constants.BD_USERS_CABECALHO;
-
 public class UserService {
 
-    private UserRepositoryView userRepository;
-    private final User user;
+    private final UserRepositoryView userRepository;
 
-    private UserService(FileUtils fileUtils, User user) {
-        this.user = user;
-        fileUtils.createIfNotExists(BD_USERS, BD_USERS_CABECALHO);
+    public UserService(UserRepositoryView userRepository) {
+        this.userRepository = userRepository;
     }
 
-    public boolean login(LoginDto loginDto) {
+    public UserDto login(LoginDto loginDto) {
         return userRepository.login(loginDto.getCpf(), loginDto.getPassword(), loginDto.getAdministrador());
     }
 
@@ -29,7 +23,8 @@ public class UserService {
         return userRepository.saveDataUser(cpf, userName, phone, isAdministrador);
     }
 
-    public UserDto saveDataAccessUser(UserDto userDto) {
+    public UserDto saveDataAccessUser(UserDto userDto){
+        User user = new User();
         user.setCpf(userDto.getCpf());
         user.setPassword(userDto.getPassword());
         user.setIsAdministrador(userDto.getIsAdministrador());
@@ -42,6 +37,7 @@ public class UserService {
     }
 
     public List<UserDto> getAll() {
+        System.out.println("Chamou o método - aqui é no service");
         return userRepository.getAll();
     }
 
