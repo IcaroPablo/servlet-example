@@ -46,10 +46,10 @@ public class ShoppingRepository implements ShoppingRepositoryView {
             }
             writer.write(linha.toString());
             writer.newLine();
-            logger.log(Level.INFO, "Carrinho salvo. CPF {}", cpf);
+            logger.log(Level.INFO, "Carrinho salvo. CPF {0}", new Object[]{cpf});
             return true;
         } catch (IOException e) {
-            logger.log(Level.WARNING,"Exception: {}", e.getMessage());
+            logger.log(Level.WARNING,"Exception: {0}", new Object[]{e.getMessage()});
             return false;
         }
     }
@@ -58,12 +58,10 @@ public class ShoppingRepository implements ShoppingRepositoryView {
         try {
             List<String> lines = Files.readAllLines(Paths.get(BD_CART), StandardCharsets.UTF_8);
 
-            // Filtra todas as linhas exceto aquela que contém o cpf
             List<String> updatedLines = lines.stream()
                     .filter(line -> !line.startsWith(cpf))
                     .collect(Collectors.toList());
 
-            // Constrói a nova linha com os produtos atualizados
             StringBuilder newLine = new StringBuilder(cpf + ",aberto,");
             for (ProductDto item : cart) {
                 newLine.append(item.getCode()).append(":")
@@ -72,10 +70,8 @@ public class ShoppingRepository implements ShoppingRepositoryView {
                         .append(item.getQuantity()).append(";");
             }
 
-            // Adiciona a nova linha ao final da lista
             updatedLines.add(newLine.toString());
 
-            // Escreve todas as linhas atualizadas de volta no arquivo
             Files.write(Paths.get(BD_CART), updatedLines, StandardCharsets.UTF_8);
 
             logger.log(Level.INFO, "Carrinho salvo e atualizado para o CPF: {}", cpf);
@@ -121,7 +117,7 @@ public class ShoppingRepository implements ShoppingRepositoryView {
     public CartDto updateCartItem(String cpf, String code, Integer quantity) {
         CartDto cartDto = getCart(cpf);
 
-        print("recuperou o carrinho");
+        logger.log(Level.INFO, "Recuperou o carrinho para o CPF: {}", cpf);
 
         if (cartDto == null || cartDto.getProducts().isEmpty()) {
             logger.log(Level.WARNING, "Carrinho não encontrado para o CPF: {}", cpf);

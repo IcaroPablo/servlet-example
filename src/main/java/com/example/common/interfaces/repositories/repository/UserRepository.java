@@ -18,6 +18,7 @@ import static com.example.common.constants.Constants.BD_USERS_INFORMATION;
 import static com.example.common.constants.Constants.ERROR_CREATE_USER;
 import static com.example.common.constants.Constants.ERROR_READ_FILE;
 import static com.example.common.infrastructure.utils.Present.print;
+import static com.example.common.infrastructure.utils.Present.println;
 import static com.example.common.interfaces.rest.dtos.UserDto.fromUser;
 
 public class UserRepository implements UserRepositoryView {
@@ -134,10 +135,10 @@ public class UserRepository implements UserRepositoryView {
                     userDto.setIsAdministrador(Boolean.parseBoolean(dados[3]));
                     users.add(userDto);
                 } else {
-                    System.out.println("linha mal-formada: " + linha);
+                    println("linha mal-formada: " + linha);
                 }
             }
-            System.out.println("usuários lidos: " + users.size());
+            println("usuários lidos: " + users.size());
             return users;
         } catch (Exception e) {
             print("Não há usuários cadastrados");
@@ -185,7 +186,7 @@ public class UserRepository implements UserRepositoryView {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Falha ao ler o arquivo: " + e.getMessage());
+            println("Falha ao ler o arquivo: " + e.getMessage());
             return false;
         }
 
@@ -196,7 +197,7 @@ public class UserRepository implements UserRepositoryView {
                     writer.newLine();
                 }
             } catch (IOException e) {
-                System.out.println("Falha ao escrever no arquivo: " + e.getMessage());
+                println("Falha ao escrever no arquivo: " + e.getMessage());
                 return false;
             }
         }
@@ -218,9 +219,9 @@ public class UserRepository implements UserRepositoryView {
 
         try {
             deletedFromUsers = deleteUserFromFile(cpf, isAdministrador, usersFile, usersTempFile, 3);
-            System.out.println("deletou do primeiro BD_USERS");
+            println("deletou do primeiro BD_USERS");
             deletedFromUsersInformation = deleteUserFromFile(cpf, isAdministrador, usersInfoFile, usersInfoTempFile, 4);
-            System.out.println("deletou do segundo BD_USERS_INFORMATION");
+            println("deletou do segundo BD_USERS_INFORMATION");
 
             if (deletedFromUsers && deletedFromUsersInformation) {
                 if (!usersTempFile.renameTo(usersFile)) {
@@ -239,7 +240,7 @@ public class UserRepository implements UserRepositoryView {
             e.printStackTrace();
             usersTempFile.delete();
             usersInfoTempFile.delete();
-            System.out.println("Falha ao deletar usuário");
+            println("Falha ao deletar usuário");
             return false;
         }
     }

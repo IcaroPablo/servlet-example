@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.example.common.infrastructure.utils.Present.printf;
 
@@ -19,6 +21,7 @@ public class ProductController extends HttpServlet {
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final Gson gson = new Gson();
     private ProductService productService;
+    private static final Logger logger = Logger.getLogger(ShoppingController.class.getName());
 
     public ProductController() {
         this.productService = new ProductService();
@@ -37,6 +40,7 @@ public class ProductController extends HttpServlet {
         boolean isCreated = productService.createProduct(productDto);
 
         if (isCreated) {
+            logger.log(Level.INFO, "Produto cadastrado: {0}", new Object[]{productDto.getCode()});
             resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.getWriter().write("Produto cadastrado com sucesso.");
         } else {
@@ -52,6 +56,7 @@ public class ProductController extends HttpServlet {
             return;
         }
 
+        logger.log(Level.INFO, "Atualizando produto: {0}", new Object[]{productDto.getCode()});
         boolean isUpdated = productService.updateProduct(productDto);
 
         if (isUpdated) {
@@ -69,6 +74,7 @@ public class ProductController extends HttpServlet {
         if (pathInfo != null) {
             if (pathInfo.equals("/get-product")) {
                 printf("Endpoint /get-product. Code = %s", req.getParameter("code"));
+                logger.log(Level.INFO, "Endpoint /get-product. Code = {0}", new Object[]{req.getParameter("code")});
                 String code = req.getParameter("code");
                 ProductDto productDto = productService.getProduct(code);
 
@@ -79,6 +85,7 @@ public class ProductController extends HttpServlet {
                     resp.getWriter().write(jsonProduct);
                 } else {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Produto não encontrado");
+                    logger.log(Level.WARNING, "Produto não encontrado");
                 }
             } else if (pathInfo.equals("/products")) {
                 var products = productService.getAll();
@@ -89,12 +96,15 @@ public class ProductController extends HttpServlet {
                     resp.getWriter().write(jsonResponse);
                 } else {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Não há produtos cadastrados");
+                    logger.log(Level.WARNING, "Não há produtos cadastrados");
                 }
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Recurso não encontrado");
+                logger.log(Level.WARNING, "Recurso não encontrado");
             }
         } else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Requisição inválida");
+            logger.log(Level.WARNING, "Requisição inválida: path info está nulo.");
         }
     }
 
@@ -103,6 +113,7 @@ public class ProductController extends HttpServlet {
         String codigo = req.getParameter("code");
 
         if (productService.deleteProduct(codigo)) {
+            logger.log(Level.INFO, "Produto excluído: {0}", new Object[]{codigo});
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("Produto excluído com sucesso.");
         } else {

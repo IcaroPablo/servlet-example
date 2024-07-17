@@ -13,8 +13,8 @@ import lombok.AllArgsConstructor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @AllArgsConstructor
 public class ShoppingController extends HttpServlet {
@@ -35,9 +35,11 @@ public class ShoppingController extends HttpServlet {
         if (pathInfo != null) {
             if (pathInfo.equals("/check")) {
                 String cpf = req.getParameter("cpf");
+                logger.log(Level.INFO, "Verificando se existe carrinho para o CPF {0}", new Object[]{cpf});
                 boolean carrinhoAberto = shoppingService.hasSavedCart(cpf);
 
                 if (carrinhoAberto) {
+                    logger.log(Level.INFO, "Carrinho encontrado para o CPF {0}", new Object[]{cpf});
                     resp.setStatus(HttpServletResponse.SC_OK);
                     resp.getWriter().write("true");
                 } else {
@@ -45,6 +47,7 @@ public class ShoppingController extends HttpServlet {
                 }
             } else if (pathInfo.equals("/get")) {
                 String cpf = req.getParameter("cpf");
+                logger.log(Level.INFO, "Buscando carrinho para o CPF {0}", new Object[]{cpf});
                 CartDto carrinho = shoppingService.getCart(cpf);
 
                 if (carrinho != null && !carrinho.getProducts().isEmpty()) {
@@ -69,6 +72,7 @@ public class ShoppingController extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
         if (pathInfo != null && pathInfo.equals("/update")) {
+            logger.log(Level.INFO, "Atualizando carrinho");
             cartUpdate(req, resp);
             return;
         }
@@ -77,8 +81,9 @@ public class ShoppingController extends HttpServlet {
         String cpf = cartDto.getCpf();
         List<ProductDto> carrinho = cartDto.getProducts();
 
+        logger.log(Level.INFO, "Salvando carrinho para o CPF {0}", new Object[]{cpf});
         shoppingService.saveCart(cpf, carrinho);
-
+        logger.log(Level.INFO, "Carrinho salvo com sucesso para o CPF {0}", new Object[]{cpf});
         resp.setStatus(HttpServletResponse.SC_CREATED);
         resp.getWriter().write("Carrinho salvo com sucesso!");
     }
@@ -107,6 +112,7 @@ public class ShoppingController extends HttpServlet {
 
         if (cartDto != null) {
             resp.setStatus(HttpServletResponse.SC_OK);
+            logger.log(Level.INFO, "Carrinho atualizado com sucesso para o CPF {0}", new Object[]{cpf});
             resp.getWriter().write("Carrinho atualizado com sucesso.");
         } else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Carrinho não encontrado.");
@@ -119,6 +125,7 @@ public class ShoppingController extends HttpServlet {
         String cpf = req.getParameter("cpf");
 
         shoppingService.deleteCart(cpf);
+        logger.log(Level.INFO, "Carrinho excluído para o CPF {0}", new Object[]{cpf});
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.getWriter().write("Todos os itens do carrinho foram excluídos");
     }

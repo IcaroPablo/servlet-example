@@ -7,6 +7,8 @@ import com.example.domain.entities.User;
 
 import java.util.List;
 
+import static com.example.common.infrastructure.utils.Present.println;
+
 public class UserService {
 
     private final UserRepositoryView userRepository;
@@ -37,7 +39,6 @@ public class UserService {
     }
 
     public List<UserDto> getAll() {
-        System.out.println("Chamou o método - aqui é no service");
         return userRepository.getAll();
     }
 

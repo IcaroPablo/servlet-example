@@ -13,11 +13,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.example.common.constants.Constants.BD_USERS;
 import static com.example.common.constants.Constants.BD_USERS_CABECALHO;
 import static com.example.common.constants.Constants.BD_USERS_INFORMATION;
 import static com.example.common.constants.Constants.BD_USERS_INFORMATION_CABECALHO;
+import static com.example.common.infrastructure.utils.Present.println;
 
 public class UserController extends HttpServlet {
 
@@ -25,6 +28,7 @@ public class UserController extends HttpServlet {
 	private static final Gson gson = new Gson();
 	private final UserRepositoryView userRepositoryView;
 	private final UserService userService;
+	private static final Logger logger = Logger.getLogger(ShoppingController.class.getName());
 
 	public UserController() {
 		this.userRepositoryView = new UserRepository();
@@ -43,6 +47,7 @@ public class UserController extends HttpServlet {
 
 		UserDto userDto = objectMapper.readValue(req.getInputStream(), UserDto.class);
 		userService.saveDataAccessUser(userDto);
+		logger.log(Level.INFO, "Usuário salvo. CPF: {0}", new Object[]{userDto.getCpf()});
 
 		var savedUserDto = userService.saveDataUser(userDto.getCpf(), userDto.getUsername(), userDto.getPhone(), userDto.getIsAdministrador());
 
@@ -60,14 +65,14 @@ public class UserController extends HttpServlet {
 
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		System.out.println("doGet method called");
+		logger.info( "Resgatando usuário.");
 
 		String pathInfo = req.getPathInfo();
-		System.out.println("Path info: " + pathInfo);
+		logger.log(Level.INFO, "Path info: {0}", new Object[]{pathInfo});
 
 		if (pathInfo != null) {
 			if (pathInfo.equals("/user")) {
-				System.out.println("Fetching user by CPF");
+				logger.log(Level.INFO, "Buscando usuário por CPF {0} e isAdmin = {1}", new Object[]{req.getParameter("cpf"), req.getParameter("administrador")});
 				String cpf = req.getParameter("cpf");
 				Boolean isAdministrador = Boolean.parseBoolean(req.getParameter("administrador"));
 				UserDto userDto = userService.getUser(cpf, isAdministrador);
@@ -80,7 +85,7 @@ public class UserController extends HttpServlet {
 					resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Usuário não encontrado");
 				}
 			} else if (pathInfo.equals("/users")) {
-				System.out.println("Fetching all users");
+				logger.info( "Buscando todos os usuários");
 				List<UserDto> users = userService.getAll();
 				if (users != null && !users.isEmpty()) {
 					String jsonResponse = objectMapper.writeValueAsString(users);
@@ -90,9 +95,10 @@ public class UserController extends HttpServlet {
 				} else {
 					resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 					resp.getWriter().write("Não há usuários cadastrados");
+					logger.log(Level.WARNING, "Não há usuários cadastrados");
 				}
 			} else if (pathInfo.equals("/check-user")) {
-				System.out.println("Checking user existence");
+				logger.log(Level.INFO, "Verificando se o usuário existe por CPF {0} e isAdmin = {1}", new Object[]{req.getParameter("cpf"), req.getParameter("administrador")});
 				String cpf = req.getParameter("cpf");
 				Boolean isAdministrador = Boolean.parseBoolean(req.getParameter("administrador"));
 				if (userService.userExists(cpf, isAdministrador)) {
@@ -102,20 +108,20 @@ public class UserController extends HttpServlet {
 					resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Não há um usuário cadastrado com o cpf informado");
 				}
 			} else {
-				System.out.println("Invalid path");
+				logger.warning("Recurso não encontrado");
 				resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-				resp.getWriter().write("Resource not found");
+				resp.getWriter().write("Recurso não encontrado");
 			}
 		} else {
-			System.out.println("Path info is null");
+			logger.warning("Requisição inválida: path info está nulo.");
 			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			resp.getWriter().write("Invalid request");
+			resp.getWriter().write("Requisição inválida: path info está nulo.");
 		}
 	}
 
 
 	private void userUpdate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		System.out.println("chamou o patch");
+		logger.info("Updating user");
 		UserDto userDto = objectMapper.readValue(req.getInputStream(), UserDto.class);
 
 		if ("null".equals(userDto.getCpf())) {
@@ -135,12 +141,14 @@ public class UserController extends HttpServlet {
 	public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String cpf = req.getParameter("cpf");
 		Boolean isAdministrador = Boolean.parseBoolean(req.getParameter("administrador"));
+		logger.log(Level.INFO, "Deletando usuário do CPF {0} e isAdmin = {1}", new Object[]{cpf, isAdministrador});
 
 		if (userService.deleteUser(cpf, isAdministrador)) {
 			resp.setStatus(HttpServletResponse.SC_OK);
-			resp.getWriter().write("User deleted successfully");
+			resp.getWriter().write("Usuário excluído com sucesso");
+			logger.info("Usuário excluído com sucesso");
 		} else {
-			resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "User not found");
+			resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usuário não encontrado");
 		}
 	}
 
