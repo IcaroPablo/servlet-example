@@ -20,7 +20,6 @@ import static com.example.common.constants.Constants.BD_USERS;
 import static com.example.common.constants.Constants.BD_USERS_CABECALHO;
 import static com.example.common.constants.Constants.BD_USERS_INFORMATION;
 import static com.example.common.constants.Constants.BD_USERS_INFORMATION_CABECALHO;
-import static com.example.common.infrastructure.utils.Present.println;
 
 public class UserController extends HttpServlet {
 
@@ -28,7 +27,7 @@ public class UserController extends HttpServlet {
 	private static final Gson gson = new Gson();
 	private final UserRepositoryView userRepositoryView;
 	private final UserService userService;
-	private static final Logger logger = Logger.getLogger(ShoppingController.class.getName());
+	private static final Logger logger = Logger.getLogger(UserController.class.getName());
 
 	public UserController() {
 		this.userRepositoryView = new UserRepository();

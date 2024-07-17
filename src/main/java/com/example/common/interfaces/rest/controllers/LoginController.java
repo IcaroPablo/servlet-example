@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 @AllArgsConstructor
 public class LoginController extends HttpServlet {
 
-	private static final Logger logger = Logger.getLogger(ShoppingRepository.class.getName());
+	private static final Logger logger = Logger.getLogger(LoginController.class.getName());
 	private final UserService userService;
 	ObjectMapper objectMapper = new ObjectMapper();
 	private final UserRepositoryView userRepositoryView;

@@ -21,7 +21,7 @@ public class ProductController extends HttpServlet {
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final Gson gson = new Gson();
     private ProductService productService;
-    private static final Logger logger = Logger.getLogger(ShoppingController.class.getName());
+    private static final Logger logger = Logger.getLogger(ProductController.class.getName());
 
     public ProductController() {
         this.productService = new ProductService();
